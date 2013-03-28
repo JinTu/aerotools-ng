@@ -46,19 +46,19 @@
 #define AQ5_HARDWARE_VER_OFFS	0x00f
 #define AQ5_UPTIME_OFFS			0x011
 #define AQ5_TOTAL_TIME_OFFS		0x015
-#define AQ5_TEMP_OFFS			0x067
+#define AQ5_TEMP_OFFS			0x069
 #define AQ5_TEMP_DIST			2
 #define AQ5_TEMP_UNDEF			0x7fff
-#define AQ5_FAN_OFFS			0x169
+#define AQ5_FAN_OFFS			0x16b
 #define AQ5_FAN_DIST			8
-#define AQ5_FAN_VRM_OFFS		0x0bf
+#define AQ5_FAN_VRM_OFFS		0x0c1
 #define AQ5_FAN_VRM_DIST		2
 #define AQ5_FAN_VRM_UNDEF		0x7fff
-#define AQ5_FLOW_OFFS			0x0fb
+#define AQ5_FLOW_OFFS			0x0fd
 #define AQ5_FLOW_DIST			2
-#define AQ5_CPU_TEMP_OFFS		0x0d7
+#define AQ5_CPU_TEMP_OFFS		0x0d9
 #define AQ5_CPU_TEMP_DIST		2
-#define AQ5_LEVEL_OFFS			0x147
+#define AQ5_LEVEL_OFFS			0x149
 #define AQ5_LEVEL_DIST			2
 
 /* settings from HID feature report 0xB */
