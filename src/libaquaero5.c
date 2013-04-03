@@ -32,6 +32,9 @@
 #include <linux/hiddev.h>
 #include <dirent.h>
 
+/* highest firmware version supported */
+#define AQ5_FW_MAX				1027
+
 /* usb communication related constants */
 #define AQ5_USB_VID				0x0c70
 #define AQ5_USB_PID				0xf001
@@ -122,6 +125,24 @@
 #define AQ5_SETTINGS_POWER_OUTPUT_OFFS		0x30c
 #define AQ5_SETTINGS_DATA_LOG_OFFS		0x623
 #define AQ5_SETTINGS_DATA_LOG_DIST		3
+#define AQ5_SETTINGS_SUPP_ALRM_AT_PWRON_OFFS	0x683
+#define AQ5_SETTINGS_ALARM_WARN_OFFS		0x653
+#define AQ5_SETTINGS_ALARM_WARN_DIST		6	
+#define AQ5_SETTINGS_TEMP_ALARM_OFFS		0x685
+#define AQ5_SETTINGS_TEMP_ALARM_DIST		9
+#define AQ5_SETTINGS_FAN_ALARM_OFFS		0x715
+#define AQ5_SETTINGS_FAN_ALARM_DIST		4
+#define AQ5_SETTINGS_FLOW_ALARM_OFFS		0x745
+#define AQ5_SETTINGS_FLOW_ALARM_DIST		9
+#define AQ5_SETTINGS_PUMP_ALARM_OFFS		0x769
+#define AQ5_SETTINGS_PUMP_ALARM_DIST		4
+#define AQ5_SETTINGS_FILL_ALARM_OFFS		0x779
+#define AQ5_SETTINGS_FILL_ALARM_DIST		9
+#define AQ5_SETTINGS_TIMER_OFFS			0x7c1
+#define AQ5_SETTINGS_TIMER_DIST			7
+#define AQ5_SETTINGS_INFRARED_OFFS		0x8a1
+#define AQ5_SETTINGS_INFRARED_DIST		12
+#define AQ5_SETTINGS_ALLOW_OUTPUT_OVERRIDE_OFFS	0x973
 
 /* Fan settings control mode masks */
 #define AQ5_SETTINGS_CTRL_MODE_REG_MODE_OUTPUT	0x0000	
@@ -130,6 +151,20 @@
 #define AQ5_SETTINGS_CTRL_MODE_STARTBOOST	0x0400
 #define AQ5_SETTINGS_CTRL_MODE_HOLD_MIN_POWER	0x0100
 
+/* Timer settings day of week masks */
+#define AQ5_SETTINGS_TIMER_DAY_SUNDAY		0x01
+#define AQ5_SETTINGS_TIMER_DAY_MONDAY		0x02
+#define AQ5_SETTINGS_TIMER_DAY_TUESDAY		0x04
+#define AQ5_SETTINGS_TIMER_DAY_WEDNESDAY	0x08
+#define AQ5_SETTINGS_TIMER_DAY_THURSDAY		0x10
+#define AQ5_SETTINGS_TIMER_DAY_FRIDAY		0x20
+#define AQ5_SETTINGS_TIMER_DAY_SATURDAY		0x40
+
+/* IR function setting masks */
+#define AQ5_SETTINGS_IR_AQUAERO_CONTROL		0x01
+#define AQ5_SETTINGS_IR_PC_MOUSE		0x02
+#define AQ5_SETTINGS_IR_PC_KEYBOARD		0x04
+#define AQ5_SETTINGS_IR_USB_FWDING_OF_UNKNOWN	0x08
 
 /* device-specific globals */
 /* TODO: vectorize to handle more than one device */
@@ -409,10 +444,10 @@ int libaquaero5_getsettings(char *device, aq5_settings_t *settings_dest, char **
 		settings_dest->time_format = TWELVE_HOUR;
 	}
 
-	if ((m & (auto_dst_t)DST_ENABLED) == (auto_dst_t)DST_ENABLED) {
-		settings_dest->auto_dst = DST_ENABLED;
+	if ((m & (state_enable_disable_t)STATE_ENABLED) == (state_enable_disable_t)STATE_ENABLED) {
+		settings_dest->auto_dst = STATE_ENABLED;
 	} else {
-		settings_dest->auto_dst = DST_DISABLED;
+		settings_dest->auto_dst = STATE_DISABLED;
 	}
 
 	/* System - standby config */
@@ -571,6 +606,147 @@ int libaquaero5_getsettings(char *device, aq5_settings_t *settings_dest, char **
 		settings_dest->data_log_config[i].data_source = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_DATA_LOG_OFFS + 1 + i * AQ5_SETTINGS_DATA_LOG_DIST);
 	}
 
+	/* Alarm and warning settings */
+	for (int i=0; i<AQ5_NUM_ALARM_AND_WARNING_LVLS; i++) {
+		for (int j=0; j<3; j++) {
+			settings_dest->alarm_and_warning_level[i].action[j] = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_ALARM_WARN_OFFS + (j * 2) + i * AQ5_SETTINGS_ALARM_WARN_DIST);
+		}
+	}
+	settings_dest->suppress_alarm_at_poweron = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_SUPP_ALRM_AT_PWRON_OFFS);
+
+	/* Temperature alarm settings */
+	for (int i=0; i<AQ5_NUM_TEMP_ALARMS; i++) {
+		settings_dest->temp_alarm[i].data_source = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_TEMP_ALARM_OFFS + i * AQ5_SETTINGS_TEMP_ALARM_DIST);
+		settings_dest->temp_alarm[i].config = aq5_buf_settings[AQ5_SETTINGS_TEMP_ALARM_OFFS + 2 + i * AQ5_SETTINGS_TEMP_ALARM_DIST];
+		settings_dest->temp_alarm[i].limit_for_warning = (double)aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_TEMP_ALARM_OFFS + 3 + i * AQ5_SETTINGS_TEMP_ALARM_DIST) /100.0;
+		settings_dest->temp_alarm[i].set_warning_level = aq5_buf_settings[AQ5_SETTINGS_TEMP_ALARM_OFFS + 5 + i * AQ5_SETTINGS_TEMP_ALARM_DIST];
+		settings_dest->temp_alarm[i].limit_for_alarm = (double)aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_TEMP_ALARM_OFFS + 6 + i * AQ5_SETTINGS_TEMP_ALARM_DIST) /100.0;
+		settings_dest->temp_alarm[i].set_alarm_level = aq5_buf_settings[AQ5_SETTINGS_TEMP_ALARM_OFFS + 8 + i * AQ5_SETTINGS_TEMP_ALARM_DIST];
+	}
+
+	/* Fan alarm settings */
+	for (int i=0; i<AQ5_NUM_FAN; i++) {
+		settings_dest->fan_alarm[i].limit_for_warning = aq5_buf_settings[AQ5_SETTINGS_FAN_ALARM_OFFS + i * AQ5_SETTINGS_FAN_ALARM_DIST];
+		settings_dest->fan_alarm[i].set_warning_level = aq5_buf_settings[AQ5_SETTINGS_FAN_ALARM_OFFS + 1 + i * AQ5_SETTINGS_FAN_ALARM_DIST];
+		settings_dest->fan_alarm[i].limit_for_alarm = aq5_buf_settings[AQ5_SETTINGS_FAN_ALARM_OFFS + 2 + i * AQ5_SETTINGS_FAN_ALARM_DIST];
+		settings_dest->fan_alarm[i].set_alarm_level = aq5_buf_settings[AQ5_SETTINGS_FAN_ALARM_OFFS + 3 + i * AQ5_SETTINGS_FAN_ALARM_DIST];
+	}
+
+	/* Flow alarm settings */
+	for (int i=0; i<AQ5_NUM_FLOW_ALARMS; i++) {
+		settings_dest->flow_alarm[i].data_source = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_FLOW_ALARM_OFFS + i * AQ5_SETTINGS_FLOW_ALARM_DIST);
+		settings_dest->flow_alarm[i].config = aq5_buf_settings[AQ5_SETTINGS_FLOW_ALARM_OFFS + 2 + i * AQ5_SETTINGS_FLOW_ALARM_DIST];
+		settings_dest->flow_alarm[i].limit_for_warning = (double)aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_FLOW_ALARM_OFFS + 3 + i * AQ5_SETTINGS_FLOW_ALARM_DIST) /10.0;
+		settings_dest->flow_alarm[i].set_warning_level = aq5_buf_settings[AQ5_SETTINGS_FLOW_ALARM_OFFS + 5 + i * AQ5_SETTINGS_FLOW_ALARM_DIST];
+		settings_dest->flow_alarm[i].limit_for_alarm = (double)aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_FLOW_ALARM_OFFS + 6 + i * AQ5_SETTINGS_FLOW_ALARM_DIST) /10.0;
+		settings_dest->flow_alarm[i].set_alarm_level = aq5_buf_settings[AQ5_SETTINGS_FLOW_ALARM_OFFS + 8 + i * AQ5_SETTINGS_FLOW_ALARM_DIST];
+	}
+	
+	/* Pump alarm settings */
+	for (int i=0; i<AQ5_NUM_PUMP_ALARMS; i++) {
+		settings_dest->pump_alarm[i].data_source = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_PUMP_ALARM_OFFS + i * AQ5_SETTINGS_PUMP_ALARM_DIST);
+		settings_dest->pump_alarm[i].config = aq5_buf_settings[AQ5_SETTINGS_PUMP_ALARM_OFFS + 2 + i * AQ5_SETTINGS_PUMP_ALARM_DIST];
+		settings_dest->pump_alarm[i].set_alarm_level = aq5_buf_settings[AQ5_SETTINGS_PUMP_ALARM_OFFS + 3 + i * AQ5_SETTINGS_PUMP_ALARM_DIST];
+	}
+
+	/* Fill level alarm settings */
+	for (int i=0; i<AQ5_NUM_FILL_ALARMS; i++) {
+		settings_dest->fill_alarm[i].data_source = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_FILL_ALARM_OFFS + i * AQ5_SETTINGS_FILL_ALARM_DIST);
+		settings_dest->fill_alarm[i].config = aq5_buf_settings[AQ5_SETTINGS_FILL_ALARM_OFFS + 2 + i * AQ5_SETTINGS_FILL_ALARM_DIST];
+		settings_dest->fill_alarm[i].limit_for_warning = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_FILL_ALARM_OFFS + 3 + i * AQ5_SETTINGS_FILL_ALARM_DIST) /100;
+		settings_dest->fill_alarm[i].set_warning_level = aq5_buf_settings[AQ5_SETTINGS_FILL_ALARM_OFFS + 5 + i * AQ5_SETTINGS_FILL_ALARM_DIST];
+		settings_dest->fill_alarm[i].limit_for_alarm = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_FILL_ALARM_OFFS + 6 + i * AQ5_SETTINGS_FILL_ALARM_DIST) /100;
+		settings_dest->fill_alarm[i].set_alarm_level = aq5_buf_settings[AQ5_SETTINGS_FILL_ALARM_OFFS + 8 + i * AQ5_SETTINGS_FILL_ALARM_DIST];
+	}
+
+	/* Timer settings */
+	for (int i=0; i<AQ5_NUM_TIMERS; i++) {
+		int j;
+		j = aq5_buf_settings[AQ5_SETTINGS_TIMER_OFFS + i * AQ5_SETTINGS_TIMER_DIST];
+		if ((j & AQ5_SETTINGS_TIMER_DAY_SUNDAY) == AQ5_SETTINGS_TIMER_DAY_SUNDAY) {
+			settings_dest->timer[i].active_days.sunday = TRUE;
+		} else {
+			settings_dest->timer[i].active_days.sunday = FALSE;
+		}
+		if ((j & AQ5_SETTINGS_TIMER_DAY_MONDAY) == AQ5_SETTINGS_TIMER_DAY_MONDAY) {
+			settings_dest->timer[i].active_days.monday = TRUE;
+		} else {
+			settings_dest->timer[i].active_days.monday = FALSE;
+		}
+		if ((j & AQ5_SETTINGS_TIMER_DAY_TUESDAY) == AQ5_SETTINGS_TIMER_DAY_TUESDAY) {
+			settings_dest->timer[i].active_days.tuesday = TRUE;
+		} else {
+			settings_dest->timer[i].active_days.tuesday = FALSE;
+		}
+		if ((j & AQ5_SETTINGS_TIMER_DAY_WEDNESDAY) == AQ5_SETTINGS_TIMER_DAY_WEDNESDAY) {
+			settings_dest->timer[i].active_days.wednesday = TRUE;
+		} else {
+			settings_dest->timer[i].active_days.wednesday = FALSE;
+		}
+		if ((j & AQ5_SETTINGS_TIMER_DAY_THURSDAY) == AQ5_SETTINGS_TIMER_DAY_THURSDAY) {
+			settings_dest->timer[i].active_days.thursday = TRUE;
+		} else {
+			settings_dest->timer[i].active_days.thursday = FALSE;
+		}
+		if ((j & AQ5_SETTINGS_TIMER_DAY_FRIDAY) == AQ5_SETTINGS_TIMER_DAY_FRIDAY) {
+			settings_dest->timer[i].active_days.friday = TRUE;
+		} else {
+			settings_dest->timer[i].active_days.friday = FALSE;
+		}
+		if ((j & AQ5_SETTINGS_TIMER_DAY_SATURDAY) == AQ5_SETTINGS_TIMER_DAY_SATURDAY) {
+			settings_dest->timer[i].active_days.saturday = TRUE;
+		} else {
+			settings_dest->timer[i].active_days.saturday = FALSE;
+		}
+
+		aq5_get_uptime(aq5_get_int32(aq5_buf_settings, AQ5_SETTINGS_TIMER_OFFS + 1 + i * AQ5_SETTINGS_TIMER_DIST), &settings_dest->timer[i].switching_time);
+		settings_dest->timer[i].action = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_TIMER_OFFS + 5 + i * AQ5_SETTINGS_TIMER_DIST);
+	}
+
+	/* IR function settings */
+	int j;
+	j = aq5_buf_settings[AQ5_SETTINGS_INFRARED_OFFS];
+	if ((j & AQ5_SETTINGS_IR_AQUAERO_CONTROL) == AQ5_SETTINGS_IR_AQUAERO_CONTROL) {
+		settings_dest->infrared_functions.aquaero_control = TRUE;
+	} else {
+		settings_dest->infrared_functions.aquaero_control = FALSE;
+	}
+	if ((j & AQ5_SETTINGS_IR_PC_MOUSE) == AQ5_SETTINGS_IR_PC_MOUSE) {
+		settings_dest->infrared_functions.pc_mouse = TRUE;
+	} else {
+		settings_dest->infrared_functions.pc_mouse = FALSE;
+	}
+	if ((j & AQ5_SETTINGS_IR_PC_KEYBOARD) == AQ5_SETTINGS_IR_PC_KEYBOARD) {
+		settings_dest->infrared_functions.pc_keyboard = TRUE;
+	} else {
+		settings_dest->infrared_functions.pc_keyboard = FALSE;
+	}
+	if ((j & AQ5_SETTINGS_IR_USB_FWDING_OF_UNKNOWN) == AQ5_SETTINGS_IR_USB_FWDING_OF_UNKNOWN) {
+		settings_dest->infrared_functions.usb_forwarding_of_unknown = TRUE;
+	} else {
+		settings_dest->infrared_functions.usb_forwarding_of_unknown = FALSE;
+	}
+	settings_dest->infrared_keyboard_layout = aq5_buf_settings[AQ5_SETTINGS_INFRARED_OFFS + 1];
+
+	for (int i=0; i<AQ5_NUM_IR_COMMANDS; i++) {
+		settings_dest->trained_ir_commands[i].config = aq5_buf_settings[AQ5_SETTINGS_INFRARED_OFFS + 2 + i * AQ5_SETTINGS_INFRARED_DIST];
+		settings_dest->trained_ir_commands[i].action = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_INFRARED_OFFS + 4 + i * AQ5_SETTINGS_INFRARED_DIST);
+		settings_dest->trained_ir_commands[i].refresh_rate = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_INFRARED_OFFS + 6 + i * AQ5_SETTINGS_INFRARED_DIST);
+		for (int r=0; r<3; r++) {
+			settings_dest->trained_ir_commands[i].learned_ir_signal[r] = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_INFRARED_OFFS + 8 + (r * 2) + i * AQ5_SETTINGS_INFRARED_DIST);
+		}
+	}
+	settings_dest->switch_pc_via_ir.config = aq5_buf_settings[AQ5_SETTINGS_INFRARED_OFFS + 195];
+	settings_dest->switch_pc_via_ir.refresh_rate = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_INFRARED_OFFS + 198);
+	for (int r=0; r<3; r++) {
+		settings_dest->switch_pc_via_ir.learned_ir_signal[r] = aq5_get_int16(aq5_buf_settings, AQ5_SETTINGS_INFRARED_OFFS + 200 + (r * 2));
+	}
+	settings_dest->switch_pc_via_ir.action_on = aq5_get_int16(aq5_buf_settings,  AQ5_SETTINGS_INFRARED_OFFS + 206);
+	settings_dest->switch_pc_via_ir.action_off = aq5_get_int16(aq5_buf_settings,  AQ5_SETTINGS_INFRARED_OFFS + 208);
+
+	/* Output override setting */
+	settings_dest->allow_output_override = aq5_buf_settings[AQ5_SETTINGS_ALLOW_OUTPUT_OVERRIDE_OFFS];
+
 	return 0;
 }
 
@@ -618,7 +794,7 @@ int libaquaero5_poll(char *device, aq5_data_t *data_dest, char **err_msg)
 		n = aq5_get_int16(aq5_buf_data, AQ5_FAN_VRM_OFFS + i * AQ5_FAN_VRM_DIST);
 		data_dest->fan_vrm_temp[i] = n!=AQ5_FAN_VRM_UNDEF ? (double)n/100.0 : AQ5_FLOAT_UNDEF;
 		data_dest->fan_rpm[i] = aq5_get_int16(aq5_buf_data, AQ5_FAN_OFFS + i * AQ5_FAN_DIST);
-		data_dest->fan_duty[i] = aq5_get_int16(aq5_buf_data, AQ5_FAN_OFFS + 2 + i * AQ5_FAN_DIST) / 100;
+		data_dest->fan_duty[i] = (double)aq5_get_int16(aq5_buf_data, AQ5_FAN_OFFS + 2 + i * AQ5_FAN_DIST) / 100.0;
 		data_dest->fan_voltage[i] = (double)aq5_get_int16(aq5_buf_data, AQ5_FAN_OFFS + 4 + i * AQ5_FAN_DIST) / 100.0;
 		data_dest->fan_current[i] = aq5_get_int16(aq5_buf_data, AQ5_FAN_OFFS + 6 + i * AQ5_FAN_DIST);
 	}
@@ -638,6 +814,10 @@ int libaquaero5_poll(char *device, aq5_data_t *data_dest, char **err_msg)
 	for (int i=0; i<AQ5_NUM_LEVEL; i++) {
 		data_dest->level[i] = (double)aq5_get_int16(aq5_buf_data, AQ5_LEVEL_OFFS + i * AQ5_LEVEL_DIST) / 100.0;
 	}
+
+	/* firmware compatibility check */
+	if (data_dest->firmware_version > AQ5_FW_MAX)
+		*err_msg = "unsupported firmware version";
 
 	return 0;
 }
@@ -681,11 +861,23 @@ char *libaquaero5_get_string(int id, val_str_opt_t opt)
 	int i;
 	val_str_t *val_str;
 	switch (opt) {
+		case BOOLEAN:
+			val_str = boolean_strings;
+			break;
+		case FLOW_CONFIG:
+			val_str = flow_config_strings;
+			break;
+		case FAN_LIMITS:
+			val_str = fan_limit_strings;
+			break;
+		case TEMP_ALARM_CONFIG:
+			val_str = temp_alarm_config_strings;
+			break;
+		case ALARM_WARNING_LEVELS:
+			val_str = alarm_warning_levels_strings;
+			break;
 		case DATA_LOG_INTERVAL:
 			val_str = data_log_interval_strings;
-			break;
-		case POWER_OUTPUT_MODE:
-			val_str = power_output_mode_strings;
 			break;
 		case AQ_RELAY_CONFIG:
 			val_str = aquaero_relay_configuration_strings;
@@ -693,20 +885,14 @@ char *libaquaero5_get_string(int id, val_str_opt_t opt)
 		case LED_PB_MODE:
 			val_str = rgb_led_pulsating_brightness_strings;
 			break;
-		case FLOW_DATA_SOURCE:
-			val_str = flow_sensor_data_source_strings;
-			break;
-		case SOFT_SENSOR_STATE:
-			val_str = soft_sensor_state_strings;
-			break;
 		case SENSOR_DATA_SOURCE:
 			val_str = sensor_data_source_strings;
 			break;
 		case VIRT_SENSOR_MODE:
 			val_str = virt_sensor_mode_strings;
 			break;
-		case STANDBY_ACTION:
-			val_str = standby_action_strings;
+		case EVENT_ACTION:
+			val_str = event_action_strings;
 			break;
 		case DATE_FORMAT:
 			val_str = date_format_strings;
@@ -714,8 +900,11 @@ char *libaquaero5_get_string(int id, val_str_opt_t opt)
 		case TIME_FORMAT:
 			val_str = time_format_strings;
 			break;
-		case AUTO_DST:
-			val_str = auto_dst_strings;
+		case STATE_ENABLE_DISABLE:
+			val_str = state_enable_disable_strings;
+			break;
+		case STATE_ENABLE_DISABLE_INV:
+			val_str = state_enable_disable_inv_strings;
 			break;
 		case DISPLAY_MODE:
 			val_str = display_mode_strings;
