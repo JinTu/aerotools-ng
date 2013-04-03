@@ -32,6 +32,8 @@
 #include <linux/hiddev.h>
 #include <dirent.h>
 
+/* lowest firmware version supported */
+#define AQ5_FW_MIN				1028
 /* highest firmware version supported */
 #define AQ5_FW_MAX				1030
 
@@ -816,7 +818,7 @@ int libaquaero5_poll(char *device, aq5_data_t *data_dest, char **err_msg)
 	}
 
 	/* firmware compatibility check */
-	if (data_dest->firmware_version > AQ5_FW_MAX)
+	if ((data_dest->firmware_version <= AQ5_FW_MIN) || (data_dest->firmware_version >= AQ5_FW_MAX))
 		*err_msg = "unsupported firmware version";
 
 	return 0;
