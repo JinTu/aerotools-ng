@@ -33,7 +33,7 @@
 #include <dirent.h>
 
 /* highest firmware version supported */
-#define AQ5_FW_MAX				1027
+#define AQ5_FW_MAX				1030
 
 /* usb communication related constants */
 #define AQ5_USB_VID				0x0c70
