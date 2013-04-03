@@ -285,11 +285,18 @@ val_str_t time_format_strings[] = {
 	{ -1,					"Unknown time format" }
 };
 
-/* Auto DST format strings */
-val_str_t auto_dst_strings[] = {
-	{ (auto_dst_t)DISABLED,	"Disabled" },
-	{ (auto_dst_t)ENABLED,	"Enabled" },
-	{ -1,			"Unknown DST mode" }
+/* State enable/disable strings */
+val_str_t state_enable_disable_strings[] = {
+	{ (state_enable_disable_t)STATE_DISABLED,	"Disabled" },
+	{ (state_enable_disable_t)STATE_ENABLED,	"Enabled" },
+	{ -1,						"Unknown" }
+};
+
+/* State enable/disable strings (inverted) */
+val_str_t state_enable_disable_inv_strings[] = {
+	{ (state_enable_disable_inv_t)STATE_DISABLED_INV,	"Disabled" },
+	{ (state_enable_disable_inv_t)STATE_ENABLED_INV,	"Enabled" },
+	{ -1,							"Unknown" }
 };
 
 /* Display mode strings */
@@ -300,25 +307,29 @@ val_str_t display_mode_strings[] = {
 };
 
 /* Standby action strings */
-val_str_t standby_action_strings[] = {
-	{ (standby_action_t)NO_ACTION,			"No action" },
-	{ (standby_action_t)SPEED_SIG_GEN_ON,		"Speed signal generator on" },
-	{ (standby_action_t)SPEED_SIG_GEN_OFF,		"Speed signal generator off" },
-	{ (standby_action_t)ALARM_BUZZER_ON,		"Alarm buzzer on" },
-	{ (standby_action_t)ALARM_BUZZER_OFF,		"Alarm buzzer off" },
-	{ (standby_action_t)ALARM_BUZZER_CYCLE_ON_OFF,	"Alarm buzzer cycle on-off" },
-	{ (standby_action_t)ALARM_BUZZER_SINGLE_TONE,	"Alarm buzzer single tone" },
-	{ (standby_action_t)RELAY_ON,			"Relay on" },
-	{ (standby_action_t)RELAY_OFF,			"Relay off" },
-	{ (standby_action_t)SWITCH_RELAY_2_SEC,		"Switch relay for 2 s" },
-	{ (standby_action_t)SWITCH_RELAY_10_SEC,	"Switch relay for 10 s" },
-	{ (standby_action_t)LOAD_PROFILE_1,		"Load profile 1" },
-	{ (standby_action_t)LOAD_PROFILE_2,		"Load profile 2" },
-	{ (standby_action_t)LOAD_PROFILE_3,		"Load profile 3" },
-	{ (standby_action_t)LOAD_PROFILE_4,		"Load profile 4" },
-	{ (standby_action_t)USB_KEYBD_POWER_KEY,	"USB keyboard: power key" },
-	{ (standby_action_t)USB_KEYBD_SLEEP_KEY,	"USB keyboard: sleep key" },
-	{ (standby_action_t)USB_KEYBD_WAKEUP_KEY,	"USB keyboard: wakeup key" },
+val_str_t event_action_strings[] = {
+	{ (event_action_t)NO_ACTION,			"No action" },
+	{ (event_action_t)SPEED_SIG_GEN_ON,		"Speed signal generator on" },
+	{ (event_action_t)SPEED_SIG_GEN_OFF,		"Speed signal generator off" },
+	{ (event_action_t)ALARM_BUZZER_ON,		"Alarm buzzer on" },
+	{ (event_action_t)ALARM_BUZZER_OFF,		"Alarm buzzer off" },
+	{ (event_action_t)ALARM_BUZZER_CYCLE_ON_OFF,	"Alarm buzzer cycle on-off" },
+	{ (event_action_t)ALARM_BUZZER_SINGLE_TONE,	"Alarm buzzer single tone" },
+	{ (event_action_t)RELAY_ON,			"Relay on" },
+	{ (event_action_t)RELAY_OFF,			"Relay off" },
+	{ (event_action_t)SWITCH_RELAY_2_SEC,		"Switch relay for 2 s" },
+	{ (event_action_t)SWITCH_RELAY_10_SEC,		"Switch relay for 10 s" },
+	{ (event_action_t)LOAD_PROFILE_1,		"Load profile 1" },
+	{ (event_action_t)LOAD_PROFILE_2,		"Load profile 2" },
+	{ (event_action_t)LOAD_PROFILE_3,		"Load profile 3" },
+	{ (event_action_t)LOAD_PROFILE_4,		"Load profile 4" },
+	{ (event_action_t)USB_KEYBD_POWER_KEY,		"USB keyboard: power key" },
+	{ (event_action_t)USB_KEYBD_SLEEP_KEY,		"USB keyboard: sleep key" },
+	{ (event_action_t)USB_KEYBD_WAKEUP_KEY,		"USB keyboard: wakeup key" },
+	{ (event_action_t)USB_MEDIA_KEYBD_PLAY_KEY,	"USB media keyboard: play" },
+	{ (event_action_t)USB_MEDIA_KEYBD_VOL_UP_KEY,	"USB media keyboard: volume up" },
+	{ (event_action_t)USB_MEDIA_KEYBD_VOL_DOWN_KEY,	"USB media keyboard: volume down" },
+	{ (event_action_t)USB_MEDIA_KEYBD_MUTE_KEY,	"USB media keyboard: mute" },
 	{ -1,						"Unknown standby action" }
 };
 
@@ -441,24 +452,6 @@ val_str_t virt_sensor_mode_strings[] = {
 	{ -1,					"Unknown mode" }
 };
 
-/* Software sensor configuration strings */
-val_str_t soft_sensor_state_strings[] = {
-	{ (soft_sensor_state_t)SENSOR_DISABLED,	"Disabled" },
-	{ (soft_sensor_state_t)SENSOR_ENABLED,	"Enabled" },
-	{ -1,					"Unknown configuration" }
-};
-
-/* Flow sensor data source strings */
-val_str_t flow_sensor_data_source_strings[] = {
-	{ (flow_sensor_data_source_t)NO_FLOW_SOURCE,	"No flow data source selected" },
-	{ (flow_sensor_data_source_t)FLOW_1_SOURCE,	"Flow 1" },
-	{ (flow_sensor_data_source_t)FLOW_2_SOURCE,	"Flow 2" },
-	{ (flow_sensor_data_source_t)FLOW_3_SOURCE,	"Flow 3" },
-	{ (flow_sensor_data_source_t)FLOW_4_SOURCE,	"Flow 4" },
-	{ (flow_sensor_data_source_t)FLOW_5_SOURCE,	"Flow 5" },
-	{ -1,						"Unknown flow sensor" }
-};
-
 /* RGB LED pulsating brightness strings */
 val_str_t rgb_led_pulsating_brightness_strings[] = {
 	{ (rgb_led_pulsating_brightness_t)PB_OFF,	"Off" },
@@ -466,13 +459,6 @@ val_str_t rgb_led_pulsating_brightness_strings[] = {
 	{ (rgb_led_pulsating_brightness_t)PB_VARIANT_2,	"Variant 2" },
 	{ (rgb_led_pulsating_brightness_t)PB_VARIANT_3,	"Variant 3" },
 	{ -1,						"Unknown mode" }
-};
-
-/* Hold powre output minimum power user strings */
-val_str_t power_output_mode_strings[] = {
-	{ (power_output_mode_t)HMP_DISABLED,		"Disabled" },
-	{ (power_output_mode_t)HMP_ENABLED,		"Enabled" },
-	{ -1,						"Unknown" }
 };
 
 /* aquaero relay configuration user strings */
@@ -496,6 +482,51 @@ val_str_t data_log_interval_strings[] = {
 	{ (data_log_interval_t)INT_EVERY_30_MIN,	"Every 30 minutes" },
 	{ (data_log_interval_t)INT_EVERY_HOUR, 		"Every hour" },
 	{ -1,						"Unknown"}
+};
+
+/* temperature alarm configuration user strings */
+val_str_t temp_alarm_config_strings[] = {
+	{ (temp_alarm_config_t)TEMP_EXCEEDS_LIMIT,	"Temperature exceeds limit" },
+	{ (temp_alarm_config_t)TEMP_DROPS_BELOW_LIMIT,	"Temperature drops below limit" },
+	{ (temp_alarm_config_t)TEMP_ALARM_OFF,		"Alarm off" },
+	{ -1,						"Unknown" }
+};
+
+/* Alarm and warning level strings */
+val_str_t alarm_warning_levels_strings[] = {
+	{ (alarm_warning_levels_t)NORMAL_OPERATION,	"Normal operation" },
+	{ (alarm_warning_levels_t)WARNING, 		"Warning" },
+	{ (alarm_warning_levels_t)ALARM, 		"Alarm" },
+	{ (alarm_warning_levels_t)ALARM_WARNING_4,	"Alarm/warning 4" },
+	{ (alarm_warning_levels_t)ALARM_WARNING_5,	"Alarm/warning 5" },
+	{ (alarm_warning_levels_t)ALARM_WARNING_6,	"Alarm/warning 6" },
+	{ (alarm_warning_levels_t)ALARM_WARNING_7,	"Alarm/warning 7" },
+	{ (alarm_warning_levels_t)ALARM_WARNING_8,	"Alarm/warning 8" },
+	{ -1, 						"Unknown" }
+};
+
+/* Fan limit strings */
+val_str_t fan_limit_strings[] = {
+	{ (fan_limit_t)NO_RPM_SIG_AFTER_6S,		"No RPM signal after 6 seconds" },
+	{ (fan_limit_t)NO_RPM_SIG_AFTER_12S,		"No RPM signal after 12 seconds" },
+	{ (fan_limit_t)NO_RPM_SIG_AFTER_24S,		"No RPM signal after 24 seconds" },
+	{ (fan_limit_t)RPM_OFF,				"Off" },
+	{ -1,						"Unknown" }
+};
+
+/* Flow sensor configuration strings */
+val_str_t flow_config_strings[] = {
+	{ (flow_config_t)FLOW_FALLS_BELOW_LIMIT,	"Flow falls below limit" },
+	{ (flow_config_t)FLOW_EXCEEDS_LIMIT,		"Flow exceeds limit" },
+	{ (flow_config_t)FLOW_OFF,			"Off" },
+	{ -1,						"Unknown" }
+};
+
+/* Boolean strings */
+val_str_t boolean_strings[] = {
+	{ (boolean_t)FALSE,				"False" }, 
+	{ (boolean_t)TRUE,				"True" },
+	{ -1,						"Unknown" }
 };
 
 #endif /* AQUAERO5_USER_STRINGS_H_ */

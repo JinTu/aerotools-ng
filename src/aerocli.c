@@ -179,8 +179,8 @@ void print_fans(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 	printf("------------ Fans ------------\n");
 	if (!out_all) {
 		for (int n=0; n<AQ5_NUM_FAN; n++) {
-			if (aq_data->fan_current[n]>0) {
-				printf("Fan %2d:   %4drpm @ %3u%% %2.0f %s\n", n+1,
+			if ((aq_sett->fan_data_source[n] != NONE) && (aq_data->fan_vrm_temp[n] != AQ5_FLOAT_UNDEF)) {
+				printf("Fan %2d:   %4drpm @ %.2f%% %2.0f %s\n", n+1,
 						aq_data->fan_rpm[n], aq_data->fan_duty[n],
 						aq_data->fan_vrm_temp[n], temp_unit);
 			}
@@ -188,7 +188,7 @@ void print_fans(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 	} else {
 		for (int n=0; n<AQ5_NUM_FAN; n++) {
 			if (aq_data->fan_vrm_temp[n] != AQ5_FLOAT_UNDEF) {
-				printf("Fan %2d:   %4drpm @ %3u%% %5.2f V\n", n+1,
+				printf("Fan %2d:   %4drpm @ %.2f%% %5.2f V\n", n+1,
 					aq_data->fan_rpm[n], aq_data->fan_duty[n],
 					aq_data->fan_voltage[n]);
 				printf("               %4d mA  %5.2f %s\n", aq_data->fan_current[n],
@@ -257,7 +257,7 @@ void print_export(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 	for (int n=0; n<AQ5_NUM_FAN; n++)
 		if (aq_data->fan_vrm_temp[n] != AQ5_FLOAT_UNDEF) {
 			printf("FAN%d_RPM=%d\n", n+1, aq_data->fan_rpm[n]);
-			printf("FAN%d_DUTY_CYCLE=%d\n", n+1, aq_data->fan_duty[n]);
+			printf("FAN%d_DUTY_CYCLE=%.2f\n", n+1, aq_data->fan_duty[n]);
 
 		}
 	for (int n=0; n<AQ5_NUM_FLOW; n++) {
@@ -284,10 +284,10 @@ void print_export(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 		printf("SYS_DEC_SEP='%s'\n", libaquaero5_get_string(aq_sett->decimal_separator, DECIMAL_SEPARATOR));
 		printf("SYS_TIME_FMT='%s'\n", libaquaero5_get_string(aq_sett->time_format, TIME_FORMAT));
 		printf("SYS_DATE_FMT='%s'\n", libaquaero5_get_string(aq_sett->date_format, DATE_FORMAT));
-		printf("SYS_TIME_ADST='%s'\n", libaquaero5_get_string(aq_sett->auto_dst, AUTO_DST));
+		printf("SYS_TIME_ADST='%s'\n", libaquaero5_get_string(aq_sett->auto_dst, STATE_ENABLE_DISABLE));
 		printf("SYS_TIME_ZONE=%d\n", aq_sett->time_zone);
-		printf("SYS_STBY_ACT_OFF='%s'\n", libaquaero5_get_string(aq_sett->standby_action_at_power_down, STANDBY_ACTION));
-		printf("SYS_STBY_ACT_ON='%s'\n", libaquaero5_get_string(aq_sett->standby_action_at_power_up, STANDBY_ACTION));
+		printf("SYS_STBY_ACT_OFF='%s'\n", libaquaero5_get_string(aq_sett->standby_action_at_power_down, EVENT_ACTION));
+		printf("SYS_STBY_ACT_ON='%s'\n", libaquaero5_get_string(aq_sett->standby_action_at_power_up, EVENT_ACTION));
 		printf("KEYS_DISABLE='%s'\n", libaquaero5_get_string(aq_sett->disable_keys, DISABLE_KEYS));
 		printf("KEYS_BEEP='%s'\n", libaquaero5_get_string(aq_sett->key_tone, KEY_TONE));
 		printf("KEYS_BRIGHT_STBY=%d\n", aq_sett->standby_key_backlight_brightness);
@@ -324,7 +324,7 @@ void print_export(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 			printf("VIRT_SENSOR%d_MODE='%s'\n", n+1, libaquaero5_get_string(aq_sett->virt_sensor_config[n].mode, VIRT_SENSOR_MODE));
 		}
 		for (int n=0; n<AQ5_NUM_SOFT_SENSORS; n++) {
-			printf("SOFT_SENSOR%d_STATE='%s'\n", n+1, libaquaero5_get_string(aq_sett->soft_sensor_state[n], SOFT_SENSOR_STATE));
+			printf("SOFT_SENSOR%d_STATE='%s'\n", n+1, libaquaero5_get_string(aq_sett->soft_sensor_state[n], STATE_ENABLE_DISABLE));
 			printf("SOFT_SENSOR%d_FALLBACK_VALUE=%.2f\n", n+1, aq_sett->soft_sensor_fallback_value[n]);
 			printf("SOFT_SENSOR%d_TIMEOUT=%d\n", n+1, aq_sett->soft_sensor_timeout[n]);
 		}
@@ -334,7 +334,7 @@ void print_export(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 			printf("FLOW_SENSOR%d_UPPER_LIMIT=%.1f\n", n+1, aq_sett->flow_sensor_upper_limit[n]);
 		}
 		for (int n=0; n<AQ5_NUM_POWER_SENSORS; n++) {
-			printf("POWER_SENSOR%d_FLOW_SENSOR=%s\n", n+1, libaquaero5_get_string(aq_sett->power_consumption_config[n].flow_sensor_data_source, FLOW_DATA_SOURCE));
+			printf("POWER_SENSOR%d_FLOW_SENSOR=%s\n", n+1, libaquaero5_get_string(aq_sett->power_consumption_config[n].flow_sensor_data_source, SENSOR_DATA_SOURCE));
 			printf("POWER_SENSOR%d_TEMP_SENSOR_1=%s\n", n+1, libaquaero5_get_string(aq_sett->power_consumption_config[n].temp_sensor_1, SENSOR_DATA_SOURCE));
 			printf("POWER_SENSOR%d_TEMP_SENSOR_2=%s\n", n+1, libaquaero5_get_string(aq_sett->power_consumption_config[n].temp_sensor_2, SENSOR_DATA_SOURCE));
 		}
@@ -360,11 +360,11 @@ void print_export(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 		printf("POWER_OUTPUT1_MIN_POWER=%d\n", aq_sett->power_output_1_config.min_power);
 		printf("POWER_OUTPUT1_MAX_POWER=%d\n", aq_sett->power_output_1_config.max_power);
 		printf("POWER_OUTPUT1_DATA_SOURCE='%s'\n", libaquaero5_get_string(aq_sett->power_output_1_config.data_source, CONTROLLER_DATA_SRC));
-		printf("POWER_OUTPUT1_HOLD_MINIMUM_POWER='%s'\n", libaquaero5_get_string(aq_sett->power_output_1_config.mode, POWER_OUTPUT_MODE));
+		printf("POWER_OUTPUT1_HOLD_MINIMUM_POWER='%s'\n", libaquaero5_get_string(aq_sett->power_output_1_config.mode, STATE_ENABLE_DISABLE));
 		printf("POWER_OUTPUT2_MIN_POWER=%d\n", aq_sett->power_output_2_config.min_power);
 		printf("POWER_OUTPUT2_MAX_POWER=%d\n", aq_sett->power_output_2_config.max_power);
 		printf("POWER_OUTPUT2_DATA_SOURCE='%s'\n", libaquaero5_get_string(aq_sett->power_output_2_config.data_source, CONTROLLER_DATA_SRC));
-		printf("POWER_OUTPUT2_HOLD_MINIMUM_POWER='%s'\n", libaquaero5_get_string(aq_sett->power_output_2_config.mode, POWER_OUTPUT_MODE));
+		printf("POWER_OUTPUT2_HOLD_MINIMUM_POWER='%s'\n", libaquaero5_get_string(aq_sett->power_output_2_config.mode, STATE_ENABLE_DISABLE));
 		printf("AQUAERO_RELAY_DATA_SOURCE='%s'\n", libaquaero5_get_string(aq_sett->aquaero_relay_data_source, CONTROLLER_DATA_SRC));
 		printf("AQUAERO_RELAY_CONFIG='%s'\n", libaquaero5_get_string(aq_sett->aquaero_relay_configuration, AQ_RELAY_CONFIG));
 		printf("AQUAERO_RELAY_SWITCH_THRESHOLD=%d\n", aq_sett->aquaero_relay_switch_threshold);
@@ -413,6 +413,89 @@ void print_export(aq5_data_t *aq_data, aq5_settings_t *aq_sett)
 			printf("DATA_LOG%d_INTERVAL='%s'\n", n+1, libaquaero5_get_string(aq_sett->data_log_config[n].interval, DATA_LOG_INTERVAL));
 			printf("DATA_LOG%d_DATA_SOURCE='%s'\n", n+1, libaquaero5_get_string(aq_sett->data_log_config[n].data_source, SENSOR_DATA_SOURCE));
 		}
+		for (int n=0; n<AQ5_NUM_ALARM_AND_WARNING_LVLS; n++) {
+			for (int m=0; m<3; m++) {
+				switch (n) {
+					case 0:
+						printf("ALARM_NORMAL_ACTION%d='%s'\n", m+1, libaquaero5_get_string(aq_sett->alarm_and_warning_level[n].action[m], EVENT_ACTION));
+						break;
+					case 1:
+						printf("ALARM_WARNING_ACTION%d='%s'\n", m+1, libaquaero5_get_string(aq_sett->alarm_and_warning_level[n].action[m], EVENT_ACTION));
+						break;
+					case 2:
+						printf("ALARM_ALARM_ACTION%d='%s'\n", m+1, libaquaero5_get_string(aq_sett->alarm_and_warning_level[n].action[m], EVENT_ACTION));
+						break;
+					default:
+						printf("ALARM_WARNING%d_ACTION%d='%s'\n", n+1, m+1, libaquaero5_get_string(aq_sett->alarm_and_warning_level[n].action[m], EVENT_ACTION));
+				}
+			}
+		}
+		printf("ALARM_SUPPRESS_AT_POWERON=%d\n", aq_sett->suppress_alarm_at_poweron);
+		for (int n=0; n<AQ5_NUM_TEMP_ALARMS; n++) {
+			printf("TEMP_ALARM%d_DATA_SOURCE='%s'\n", n+1, libaquaero5_get_string(aq_sett->temp_alarm[n].data_source, SENSOR_DATA_SOURCE));
+			printf("TEMP_ALARM%d_CONFIG='%s'\n", n+1, libaquaero5_get_string(aq_sett->temp_alarm[n].config, TEMP_ALARM_CONFIG));
+			printf("TEMP_ALARM%d_LIMIT_FOR_WARNING=%.2f\n", n+1, aq_sett->temp_alarm[n].limit_for_warning);
+			printf("TEMP_ALARM%d_SET_WARNING_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->temp_alarm[n].set_warning_level, ALARM_WARNING_LEVELS));
+			printf("TEMP_ALARM%d_LIMIT_FOR_ALARM=%.2f\n", n+1, aq_sett->temp_alarm[n].limit_for_alarm);
+			printf("TEMP_ALARM%d_SET_ALARM_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->temp_alarm[n].set_alarm_level, ALARM_WARNING_LEVELS));
+		}
+		for (int n=0; n<AQ5_NUM_FAN; n++) {
+			printf("FAN%d_ALARM_LIMIT_FOR_WARNING='%s'\n", n+1, libaquaero5_get_string(aq_sett->fan_alarm[n].limit_for_warning, FAN_LIMITS));
+			printf("FAN%d_SET_WARNING_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->fan_alarm[n].set_warning_level, ALARM_WARNING_LEVELS));
+			printf("FAN%d_ALARM_LIMIT_FOR_ALARM='%s'\n", n+1, libaquaero5_get_string(aq_sett->fan_alarm[n].limit_for_alarm, FAN_LIMITS));
+			printf("FAN%d_SET_ALARM_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->fan_alarm[n].set_alarm_level, ALARM_WARNING_LEVELS));
+		}
+		for (int n=0; n<AQ5_NUM_FLOW_ALARMS; n++) {
+			printf("FLOW_ALARM%d_DATA_SOURCE='%s'\n", n+1, libaquaero5_get_string(aq_sett->flow_alarm[n].data_source, SENSOR_DATA_SOURCE));
+			printf("FLOW_ALARM%d_CONFIG='%s'\n", n+1, libaquaero5_get_string(aq_sett->flow_alarm[n].config, FLOW_CONFIG));
+			printf("FLOW_ALARM%d_LIMIT_FOR_WARNING=%.1f\n", n+1, aq_sett->flow_alarm[n].limit_for_warning);
+			printf("FLOW_ALARM%d_SET_WARNING_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->flow_alarm[n].set_warning_level, ALARM_WARNING_LEVELS));
+			printf("FLOW_ALARM%d_LIMIT_FOR_ALARM=%.1f\n", n+1, aq_sett->flow_alarm[n].limit_for_alarm);
+			printf("FLOW_ALARM%d_SET_ALARM_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->flow_alarm[n].set_alarm_level, ALARM_WARNING_LEVELS));
+		}
+		for (int n=0; n<AQ5_NUM_PUMP_ALARMS; n++) {
+			printf("PUMP_ALARM%d_DATA_SOURCE='%s'\n", n+1, libaquaero5_get_string(aq_sett->pump_alarm[n].data_source, SENSOR_DATA_SOURCE));
+			printf("PUMP_ALARM%d_CONFIG='%s'\n", n+1, libaquaero5_get_string(aq_sett->pump_alarm[n].config, STATE_ENABLE_DISABLE_INV));
+			printf("PUMP_ALARM%d_SET_ALARM_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->pump_alarm[n].set_alarm_level, ALARM_WARNING_LEVELS));
+		}
+		for (int n=0; n<AQ5_NUM_FILL_ALARMS; n++) {
+			printf("FILL_ALARM%d_DATA_SOURCE='%s'\n", n+1, libaquaero5_get_string(aq_sett->fill_alarm[n].data_source, SENSOR_DATA_SOURCE));
+			printf("FILL_ALARM%d_CONFIG='%s'\n", n+1, libaquaero5_get_string(aq_sett->fill_alarm[n].config, STATE_ENABLE_DISABLE_INV));
+			printf("FILL_ALARM%d_LIMIT_FOR_WARNING=%d\n", n+1, aq_sett->fill_alarm[n].limit_for_warning);
+			printf("FILL_ALARM%d_SET_WARNING_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->fill_alarm[n].set_warning_level, ALARM_WARNING_LEVELS));
+			printf("FILL_ALARM%d_LIMIT_FOR_ALARM=%d\n", n+1, aq_sett->fill_alarm[n].limit_for_alarm);
+			printf("FILL_ALARM%d_SET_ALARM_LEVEL='%s'\n", n+1, libaquaero5_get_string(aq_sett->fill_alarm[n].set_alarm_level, ALARM_WARNING_LEVELS));
+		}
+		for (int n=0; n<AQ5_NUM_TIMERS; n++) {
+			char timer_time_str[21];
+			printf("TIMER%d_ACTIVE_SUNDAY='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].active_days.sunday, BOOLEAN));
+			printf("TIMER%d_ACTIVE_MONDAY='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].active_days.monday, BOOLEAN));
+			printf("TIMER%d_ACTIVE_TUESDAY='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].active_days.tuesday, BOOLEAN));
+			printf("TIMER%d_ACTIVE_WEDNESDAY='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].active_days.wednesday, BOOLEAN));
+			printf("TIMER%d_ACTIVE_THURSDAY='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].active_days.thursday, BOOLEAN));
+			printf("TIMER%d_ACTIVE_FRIDAY='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].active_days.friday, BOOLEAN));
+			printf("TIMER%d_ACTIVE_SATURDAY='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].active_days.saturday, BOOLEAN));
+			strftime(timer_time_str, 20, "%H:%M:%S", &aq_sett->timer[n].switching_time);
+			printf("TIMER%d_SWITCHING_TIME='%s'\n", n+1, timer_time_str);
+			printf("TIMER%d_ACTION='%s'\n", n+1, libaquaero5_get_string(aq_sett->timer[n].action, EVENT_ACTION));
+		}
+		printf("IR_FUNCTION_AQUAERO_CONTROL_ACTIVE='%s'\n", libaquaero5_get_string(aq_sett->infrared_functions.aquaero_control, BOOLEAN));
+		printf("IR_FUNCTION_PC_MOUSE_ACTIVE='%s'\n", libaquaero5_get_string(aq_sett->infrared_functions.pc_mouse, BOOLEAN));
+		printf("IR_FUNCTION_PC_KEYBOARD_ACTIVE='%s'\n", libaquaero5_get_string(aq_sett->infrared_functions.pc_keyboard, BOOLEAN));
+		printf("IR_FUNCTION_SB_FWDING_OF_UNKNOWN_ACTIVE='%s'\n", libaquaero5_get_string(aq_sett->infrared_functions.usb_forwarding_of_unknown, BOOLEAN));
+		printf("IR_KEYBOARD_LAYOUT='%s'\n", libaquaero5_get_string(aq_sett->infrared_keyboard_layout, LANGUAGE));
+		for (int n=0; n<AQ5_NUM_IR_COMMANDS; n++) {
+			printf("IR_COMMAND%d_CONFIG='%s'\n", n+1, libaquaero5_get_string(aq_sett->trained_ir_commands[n].config, STATE_ENABLE_DISABLE));
+			printf("IR_COMMAND%d_ACTION='%s'\n", n+1, libaquaero5_get_string(aq_sett->trained_ir_commands[n].action, EVENT_ACTION));
+			printf("IR_COMMAND%d_REFRESH_RATE=%d\n", n+1, aq_sett->trained_ir_commands[n].refresh_rate);
+			printf("IR_COMMAND%d_LEARNED_IR_SIGNAL=%05d-%05d-%05d\n", n+1, aq_sett->trained_ir_commands[n].learned_ir_signal[0], aq_sett->trained_ir_commands[n].learned_ir_signal[1], aq_sett->trained_ir_commands[n].learned_ir_signal[2]);
+		}
+		printf("SWITCH_PC_VIA_IR_CONFIG='%s'\n", libaquaero5_get_string(aq_sett->switch_pc_via_ir.config, STATE_ENABLE_DISABLE));
+		printf("SWITCH_PC_VIA_IR_ACTION_ON='%s'\n", libaquaero5_get_string(aq_sett->switch_pc_via_ir.action_on, EVENT_ACTION));
+		printf("SWITCH_PC_VIA_IR_ACTION_OFF='%s'\n", libaquaero5_get_string(aq_sett->switch_pc_via_ir.action_off, EVENT_ACTION));
+		printf("SWITCH_PC_VIA_IR_REFRESH_RATE=%d\n", aq_sett->switch_pc_via_ir.refresh_rate);
+		printf("SWITCH_PC_VIA_IR_LEARNED_IR_SIGNAL=%05d-%05d-%05d\n", aq_sett->switch_pc_via_ir.learned_ir_signal[0], aq_sett->switch_pc_via_ir.learned_ir_signal[1], aq_sett->switch_pc_via_ir.learned_ir_signal[2]);
+		printf("ALLOW_OUTPUT_OVERRIDE='%s'\n", libaquaero5_get_string(aq_sett->allow_output_override, DISABLE_KEYS));
 	}
 }
 
@@ -428,6 +511,8 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to poll: %s (%s)\n", err_msg, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+	if (err_msg != NULL)
+		fprintf(stderr, "WARNING: %s\n", err_msg);
 
 	if (libaquaero5_getsettings(NULL, &aquaero_settings, &err_msg) < 0) {
 		fprintf(stderr, "failed to get settings: %s (%s)\n", err_msg,

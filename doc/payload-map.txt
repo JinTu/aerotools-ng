@@ -1342,7 +1342,7 @@ offset		type	value		description
 0x79a		int16	alarm_fill_4 limit_for_alarm		Fill alarm 4 limit for alarm
 0x79c		int8	alarm_fill_4 set_alrm_level		Fill alarm 4 set alarm level
 
-0x79d-0x7c0	unknown, but looks like fill level sensors
+0x79d-0x7c0	unknown, but looks like 4 more fill level sensors
 
 0x7c1		int8	timer_1 active_days			Timer 1 active on these days
 0x7c2		int32	timer_1 switching_time			Timer 1 switching time
@@ -1472,7 +1472,7 @@ offset		type	value		description
 0x89b		int32	timer_32 switching_time			Timer 32 switching time
 0x89f		int16	timer_32 action				Timer 32 action to be performed
 
-0x9a1		int8	infrared_functions			Infrared function control
+0x8a1		int8	infrared_functions			Infrared function control
 0x8a2		int8	infrared_keyboard_layout		Infrared keyboard layout
 
 0x8a3		int8	ir_command_1 config			Infrared command 1 configuration
@@ -1613,4 +1613,4 @@ offset		type	value		description
 0x96f		int16	ir_command_pc action_on			Infrared command pc on/off action to switch off the pc
 0x971		int16	ir_command_pc action_off		Infrared command pc on/off action to switch on the pc
 
-0x972		int8			Allow output override
+0x973		int8			Allow output override
