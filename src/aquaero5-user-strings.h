@@ -720,6 +720,133 @@ default_name_str_t default_name_strings[] = {
 			"Profile 3",
 			"Profile 4"
 		}
+	},
+	{ NAME_AQUASTREAM_XT, "aquastream XT",
+		{
+			"aquastream xt 1",
+			"aquastream xt 2"
+		}
+	},
+	{ NAME_MULTISWITCH, "multiswitch",
+		{
+			"multiswitch 1",
+			"multiswitch 2"
+		}
+	},
+	{ NAME_TARGET_VALUE_CONT, "target value controller",
+		{
+			"Target value 1",
+			"Target value 2",
+			"Target value 3",
+			"Target value 4",
+			"Target value 5",
+			"Target value 6",
+			"Target value 7",
+			"Target value 8"
+		}
+	},
+	{ NAME_CURVE_CONT, "curve controller",
+		{
+			"Curve controller 1",
+			"Curve controller 2",
+			"Curve controller 3",
+			"Curve controller 4"
+		}
+	},
+	{ NAME_TWO_POINT_CONT, "two point controller",
+		{
+			"Two point 1",
+			"Two point 2",
+			"Two point 3",
+			"Two point 4",
+			"Two point 5",
+			"Two point 6",
+			"Two point 7",
+			"Two point 8",
+			"Two point 9",
+			"Two point 10",
+			"Two point 11",
+			"Two point 12",
+			"Two point 13",
+			"Two point 14",
+			"Two point 15",
+			"Two point 16"
+		}
+	},
+	{ NAME_PRESET_VALUE_CONT, "preset value controller",
+		{
+			"Preset value 1",
+			"Preset value 2",
+			"Preset value 3",
+			"Preset value 4",
+			"Preset value 5",
+			"Preset value 6",
+			"Preset value 7",
+			"Preset value 8"
+		}
+	},
+	{ NAME_POWER_OUTPUT, "power output",
+		{
+			"Power output 1",
+			"Power output 2"
+		}
+	},
+	{ NAME_ALERT_LEVEL, "alert level",
+		{
+			"Normal operation",
+			"Warning",
+			"Alarm",
+			"Alarm/Warning 4",
+			"Alarm/Warning 5",
+			"Alarm/Warning 6",
+			"Alarm/Warning 7",
+			"Alarm/Warning 8"
+		}
+	},
+	{ NAME_AQ5, "aq5",
+		{
+			"aquaero 5"
+		}
+	},
+	{ NAME_FILL_LEVEL, "fill level",
+		{
+			"Fill level 1",
+			"Fill level 2",
+			"Fill level 3",
+			"Fill level 4"
+		}
+	},
+	{ NAME_PRESSURE, "pressure",
+		{
+			"Pressure 1",
+			"Pressure 2",
+			"Pressure 3",
+			"Pressure 4"
+		}
+	},
+	{ NAME_HUMIDITY, "humidity",
+		{
+			"Humidity 1",
+			"Humidity 2",
+			"Humidity 3",
+			"Humidity 4"
+		}
+	},
+	{ NAME_WATER_QUALITY, "water quality",
+		{
+			"Water quality 1",
+			"Water quality 2",
+			"Water quality 3",
+			"Water quality 4"
+		}
+	},
+	{ NAME_MPS_D5, "mps D5",
+		{
+			"mps D5 - 1",
+			"mps D5 - 2",
+			"mps D5 - 3",
+			"mps D5 - 4"
+		}
 	}
 };
 
