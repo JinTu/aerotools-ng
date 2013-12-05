@@ -546,4 +546,181 @@ val_str_t aquastream_xt_freqmode_strings[] = {
 };
 
 
+/* Definitions for device name defaults */
+typedef struct {
+	int	name_type;
+	char	*ref;
+	char	*name_string[16];
+} default_name_str_t;
+
+default_name_str_t default_name_strings[] = {
+	{ NAME_BUTTON,	"buttons", 
+		{ 
+			"F1",
+			"F2",
+			"F3",
+			"F4",
+			"exit",
+			"Menu",
+			"back",
+			"cancel",
+			"learn",
+			"dummy",
+			"dummy",
+			"dummy",
+			"dummy",
+			"dummy",
+			"dummy",
+			"dummy"
+		}
+	},
+	{ NAME_SENSOR,	"sensors",
+		{
+			"Sensor 1",
+			"Sensor 2",
+			"Sensor 3",
+			"Sensor 4",
+			"Sensor 5",
+			"Sensor 6",
+			"Sensor 7",
+			"Sensor 8"
+		}
+	},
+	{ NAME_POWERADJUST,	"poweradjust",
+		{
+			"poweradjust 1",
+			"poweradjust 2",
+			"poweradjust 3",
+			"poweradjust 4",
+			"poweradjust 5",
+			"poweradjust 6",
+			"poweradjust 7",
+			"poweradjust 8"
+		}
+	},
+	{ NAME_SOFTWARE_SENSOR,	"software sensor",
+		{
+			"Software sensor 1",
+			"Software sensor 1",
+			"Software sensor 2",
+			"Software sensor 3",
+			"Software sensor 4",
+			"Software sensor 5",
+			"Software sensor 6",
+			"Software sensor 7",
+			"Software sensor 8"
+		}
+	},
+	{ NAME_VIRTUAL_SENSOR,	"virtual sensor",
+		{
+			"Virtual sensor 1",
+			"Virtual sensor 2",
+			"Virtual sensor 3",
+			"Virtual sensor 4"
+		}
+	},
+	{ NAME_MPS,	"MPS",
+		{
+			"MPS 1 external",
+			"MPS 1 internal",
+			"MPS 2 external",
+			"MPS 2 internal",
+			"MPS 3 external",
+			"MPS 3 internal",
+			"MPS 4 external",
+			"MPS 4 internal"
+		}
+	},
+	{ NAME_AQUASTREAM,	"aquastream",
+		{
+			"aquastream 1",
+			"aquastream 2"
+		}
+	},
+	{ NAME_SENSOR_EXT1,	"external sensors 1",
+		{
+			"Sensor 39",
+			"Sensor 40",
+			"Sensor 41",
+			"Sensor 42",
+			"Sensor 43",
+			"Sensor 44"
+		}
+	},
+	{ NAME_FAN_AMPLIFIER,	"fan amplifier",
+		{
+			"Fan amplifier 1",
+			"Fan amplifier 2",
+			"Fan amplifier 3",
+			"Fan amplifier 4",
+			"Fan amplifier 5",
+			"Fan amplifier 6",
+			"Fan amplifier 7",
+			"Fan amplifier 8",
+			"Fan amplifier 9",
+			"Fan amplifier 10",
+			"Fan amplifier 11",
+			"Fan amplifier 12"
+		}
+	},
+	{ NAME_CPU,	"CPU",
+		{
+			"aquaero CPU"
+		}
+	},
+	{ NAME_SENSOR_EXT2,	"external sensors 2",
+		{
+			"Sensor 58",
+			"Sensor 59",
+			"Sensor 60",
+			"Sensor 61",
+			"Sensor 62",
+			"Sensor 63",
+			"Sensor 64"
+		}
+	},
+	{ NAME_FAN,	"fan",
+		{
+			"Fan 1",
+			"Fan 2",
+			"Fan 3",
+			"Fan 4",
+			"Fan 5",
+			"Fan 6",
+			"Fan 7",
+			"Fan 8",
+			"Fan 9",
+			"Fan 10",
+			"Fan 11",
+			"Fan 12"
+		}
+	},
+	{ NAME_FLOW,	"flow sensor",
+		{
+			"Flow 1",
+			"Flow 2",
+			"Flow 3",
+			"Flow 4",
+			"Flow 5",
+			"Flow 6",
+			"Flow 7",
+			"Flow 8",
+			"Flow 9",
+			"Flow 10",
+			"Flow 11",
+			"Flow 12",
+			"Flow 13",
+			"Flow 14"
+		}
+	},
+	{ NAME_PROFILE,	"profile",
+		{
+			"Profile 1",
+			"Profile 2",
+			"Profile 3",
+			"Profile 4"
+		}
+	}
+};
+
 #endif /* AQUAERO5_USER_STRINGS_H_ */
