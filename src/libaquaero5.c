@@ -1256,3 +1256,21 @@ char *libaquaero5_get_name(name_enum_t type, uint8_t index)
 		return "Unknown";
 	}
 }
+
+/* Return the human readable default name for the given reference and index */
+char *libaquaero5_get_default_name(char *reference, uint8_t index)
+{
+	for (int n=0; n<AQ5_NUM_NAME_TYPES; n++) {
+		if (strcmp(reference, default_name_strings[n].ref) == 0) {
+			printf("Found match for reference '%s' at %d\n", reference, n);
+			if (index < name_positions[default_name_strings[n].name_type].count) {
+				printf("Returning '%s'\n", default_name_strings[n].name_string[index]);
+				return default_name_strings[n].name_string[index];
+			} else {
+				break;
+			}
+		}
+	}
+	return "Unknown";
+}
+
