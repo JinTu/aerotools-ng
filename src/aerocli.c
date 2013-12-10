@@ -69,7 +69,7 @@ void parse_cmdline(int argc, char *argv[])
 	extern int optind, optopt, opterr;
 	char* argstr;
 	int index = 0;
-	char *ref = NULL;
+	char *ref = NULL; /* Need this to satisfy silly compiler warning */
 	char *def_val, *new_val;
 
 	while ((c = getopt(argc, argv, "d:o:aqs:n:D:S:hT")) != -1) {
@@ -149,12 +149,17 @@ void parse_cmdline(int argc, char *argv[])
 						new_val = argstr;
 					}	
 				}
-				printf("Default for '%s', index=%d is '%s'\n", ref, index, libaquaero5_get_default_name(ref, index - 1));
+				printf("Default for '%s', index=%d is '%s'\n", ref, index, libaquaero5_get_default_name_ref(ref, index - 1));
 				break;
 			case '?':
 				if (optopt == 'n') {
 					/* Print the references and exit */
 					fprintf(stderr, "option -n requires REFERENCE:INDEX:VALUE (i.e. -n \"sensors:1:Sensor 1\")\n");
+					for (int i=0; i<AQ5_NUM_NAME_TYPES; i++) {
+						for (int j=0; j<name_positions[i].count; j++) {
+							printf("Default for type '%d', index=%d is '%s'\n", i, j, libaquaero5_get_default_name_type(i, j));
+						}
+					}
 				} else if (optopt == 'd'|| optopt == 'o') {
 					fprintf(stderr, "option -%c requires an argument\n",
 							optopt);
