@@ -149,7 +149,7 @@ void parse_cmdline(int argc, char *argv[])
 						new_val = argstr;
 					}	
 				}
-				printf("Default for '%s', index=%d is '%s'\n", ref, index, libaquaero5_get_default_name_ref(ref, index - 1));
+				printf("Default for '%s', index=%d is '%s'\n", ref, index, libaquaero5_get_default_name_by_ref(ref, index - 1));
 				break;
 			case '?':
 				if (optopt == 'n') {
@@ -157,7 +157,7 @@ void parse_cmdline(int argc, char *argv[])
 					fprintf(stderr, "option -n requires REFERENCE:INDEX:VALUE (i.e. -n \"sensors:1:Sensor 1\")\n");
 					for (int i=0; i<AQ5_NUM_NAME_TYPES; i++) {
 						for (int j=0; j<name_positions[i].count; j++) {
-							printf("Default for type '%d', index=%d is '%s'\n", i, j, libaquaero5_get_default_name_type(i, j));
+							printf("Default for type '%s', index=%d is '%s'\n", libaquaero5_get_name_ref_by_type(i), j, libaquaero5_get_default_name_by_type(i, j));
 						}
 					}
 				} else if (optopt == 'd'|| optopt == 'o') {

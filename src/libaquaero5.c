@@ -1258,7 +1258,7 @@ char *libaquaero5_get_name(name_enum_t type, uint8_t index)
 }
 
 /* Return the human readable default name for the given reference and index */
-char *libaquaero5_get_default_name_type(name_enum_t type, uint8_t index)
+char *libaquaero5_get_default_name_by_type(name_enum_t type, uint8_t index)
 {
 	if (index < name_positions[type].count) {
 #ifdef DEBUG
@@ -1271,20 +1271,25 @@ char *libaquaero5_get_default_name_type(name_enum_t type, uint8_t index)
 }
 
 /* Return the human readable default name for the given reference and index */
-char *libaquaero5_get_default_name_ref(char *reference, uint8_t index)
+char *libaquaero5_get_default_name_by_ref(char *reference, uint8_t index)
 {
 	for (int n=0; n<AQ5_NUM_NAME_TYPES; n++) {
 		if (strcmp(reference, default_name_strings[n].ref) == 0) {
-			if (index < name_positions[default_name_strings[n].name_type].count) {
-#ifdef DEBUG
-				printf("Returning '%s'\n", default_name_strings[n].name_string[index]);
-#endif
-				return default_name_strings[n].name_string[index];
-			} else {
-				break;
-			}
+			return libaquaero5_get_default_name_by_type(n, index);
 		}
 	}
 	return "Unknown";
 }
+
+/* Return the human readable reference for the given type */
+char *libaquaero5_get_name_ref_by_type(name_enum_t type)
+{
+	if (default_name_strings[type].ref != NULL) {
+		return default_name_strings[type].ref;
+	}
+	else {
+		return "Unknown";
+	}
+}
+
 
