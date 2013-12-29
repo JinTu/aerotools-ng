@@ -74,6 +74,7 @@ unsigned char aq5_buf_data[AQ5_DATA_LEN];
 unsigned char aq5_buf_settings[AQ5_SETTINGS_LEN];
 unsigned char aq5_buf_soft_sensors[AQ5_SOFT_SENSORS_LEN];
 unsigned char aq5_buf_time[AQ5_TIME_LEN];
+unsigned char aq5_buf_name[AQ5_NAME_LEN + 3];
 char **aq5_buf_device_names;
 int aq5_fd = -1;
 
@@ -1257,7 +1258,7 @@ char *libaquaero5_get_name(name_enum_t type, uint8_t index)
 	}
 }
 
-/* Return the human readable default name for the given reference and index */
+/* Return the human readable default name for the given type and index */
 char *libaquaero5_get_default_name_by_type(name_enum_t type, uint8_t index)
 {
 	if (index < name_positions[type].count) {
@@ -1292,4 +1293,48 @@ char *libaquaero5_get_name_ref_by_type(name_enum_t type)
 	}
 }
 
+/* Set the name for the given reference and index */
+int libaquaero5_set_name_by_ref(char *device, char *reference, uint8_t index, char *name, char **err_msg)
+{
+	for (int n=0; n<AQ5_NUM_NAME_TYPES; n++) {
+		if (strcmp(reference, default_name_strings[n].ref) == 0) {
+			if (index < name_positions[n].count) {
+				printf("Setting '%s' index %d to '%s'\n", reference, index, name);
+				/* Initialize the buffer */
+				for (int i=0; i<(AQ5_NAME_LEN+3); i++) {
+					aq5_buf_name[i] = 0;
+				}
+				/* Set the address */
+					aq5_buf_name[1] = name_positions[n].address + index;
+
+				/* Fill aq5_buf_name with the values */
+				for (int a=0; a<strlen(name); a++) {
+					printf("Setting position %d to %02X\n", a + 3, (int)name[a]);
+					aq5_buf_name[a + 3] = (int)name[a];
+				}
+				printf("Full buffer: ");
+				for (int a=0; a<(AQ5_NAME_LEN+3); a++) {
+					printf("%02X ", aq5_buf_name[a]);
+				}
+				printf("\n");
+				/* Allow the device to be disconnected and open only if the fd is undefined */
+				if (aq5_open(device, err_msg) != 0) {
+					return -1;
+				}
+
+				if (aq5_send_report(aq5_fd, 0xa, HID_REPORT_TYPE_OUTPUT, aq5_buf_name) != 0) {
+					*err_msg = "libaquaero5_set_name_by_ref() failed!";
+					return -1;
+				}
+				return 0;
+			}
+			else {
+				*err_msg = "invalid index for type!";
+				return -1;
+			}
+		}
+	}
+	*err_msg = "unable to find matching type!";
+	return -1; 
+}
 

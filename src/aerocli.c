@@ -149,7 +149,13 @@ void parse_cmdline(int argc, char *argv[])
 						new_val = argstr;
 					}	
 				}
+				/* We have everything we need, now commit the setting */
 				printf("Default for '%s', index=%d is '%s'\n", ref, index, libaquaero5_get_default_name_by_ref(ref, index - 1));
+				printf("Setting '%s', index=%d to '%s'\n", ref, index, new_val);
+				if (libaquaero5_set_name_by_ref(device, ref, index - 1, new_val, &err_msg) < 0) {
+					fprintf(stderr, "failed to set name: %s (%s)\n", err_msg, strerror(errno));
+					exit(EXIT_FAILURE);
+				}
 				break;
 			case '?':
 				if (optopt == 'n') {
@@ -157,7 +163,7 @@ void parse_cmdline(int argc, char *argv[])
 					fprintf(stderr, "option -n requires REFERENCE:INDEX:VALUE (i.e. -n \"sensors:1:Sensor 1\")\n");
 					for (int i=0; i<AQ5_NUM_NAME_TYPES; i++) {
 						for (int j=0; j<name_positions[i].count; j++) {
-							printf("Default for type '%s', index=%d is '%s'\n", libaquaero5_get_name_ref_by_type(i), j, libaquaero5_get_default_name_by_type(i, j));
+							printf("Default for type '%s', index=%d is '%s'\n", libaquaero5_get_name_ref_by_type(i), j+1, libaquaero5_get_default_name_by_type(i, j));
 						}
 					}
 				} else if (optopt == 'd'|| optopt == 'o') {
