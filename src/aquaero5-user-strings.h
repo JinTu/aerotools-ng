@@ -601,7 +601,6 @@ default_name_str_t default_name_strings[] = {
 	{ NAME_SOFTWARE_SENSOR,	"software sensor",
 		{
 			"Software sensor 1",
-			"Software sensor 1",
 			"Software sensor 2",
 			"Software sensor 3",
 			"Software sensor 4",
