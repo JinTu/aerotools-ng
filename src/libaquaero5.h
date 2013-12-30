@@ -48,6 +48,7 @@
 #define AQ5_NUM_TIMERS					32
 #define AQ5_NUM_IR_COMMANDS				16
 #define AQ5_NUM_AQUASTREAM_XT		2
+#define AQ5_NUM_NAME_TYPES		28
 
 /* constant for unknown value */
 #define AQ5_FLOAT_UNDEF			-99.0
@@ -928,6 +929,10 @@ int 	libaquaero5_commit_soft_sensors(char *device, char **err_msg);
 int	libaquaero5_set_time(char *device, time_t time, char **err_msg);
 int	libaquaero5_get_all_names(char *device, int max_attempts, char **err_msg);
 char	*libaquaero5_get_name(name_enum_t type, uint8_t index);
+char	*libaquaero5_get_default_name_by_ref(char *reference, uint8_t index);
+char	*libaquaero5_get_default_name_by_type(name_enum_t type, uint8_t index);
+char	*libaquaero5_get_name_ref_by_type(name_enum_t type);
+int 	libaquaero5_set_name_by_ref(char *device, char *reference, uint8_t index, char *name, char **err_msg);
 
 /* helpful for debugging */
 int 	libaquaero5_dump_data(char *file);

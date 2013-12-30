@@ -87,6 +87,10 @@ default (disconnected).
 
 To synchronize the Aquaero5(R) time with your system time use `-T`.
 
+To set a device/sensor name use `-n REFERENCE:INDEX:VALUE` i.e. `-n "sensors:1:Sensor 1"`.
+To get a list of the device/sensor name references and all default names, 
+simply omit the argument to `-n`.
+ 
 
 USAGE: aq5rpcd
 ----------------

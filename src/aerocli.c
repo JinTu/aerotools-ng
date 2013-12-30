@@ -52,6 +52,7 @@ void print_help()
 
 	printf("Writing Options:\n");
 	printf("  -s  SENSOR:VALUE   set the given sofware SENSOR to the specified VALUE\n");
+	printf("  -n  REFERENCE:INDEX:VALUE set the given name REFERENCE:INDEX to the specified VALUE\n");
 	printf("  -T                 synchronize time\n\n");
 
 	printf("  -D  FILE    dump data to FILE\n");
@@ -69,8 +70,10 @@ void parse_cmdline(int argc, char *argv[])
 	extern int optind, optopt, opterr;
 	char* argstr;
 	int index = 0;
+	char *ref = NULL; /* Need this to satisfy silly compiler warning */
+	char *new_val;
 
-	while ((c = getopt(argc, argv, "d:o:aqs:D:S:hT")) != -1) {
+	while ((c = getopt(argc, argv, "d:o:aqs:n:D:S:hT")) != -1) {
 		switch (c) {
 			case 'q':
 				quiet = 1;
@@ -126,10 +129,49 @@ void parse_cmdline(int argc, char *argv[])
 			case 'T':
 				set_time = 1;
 				break;
+			case 'n':
+				/* Split the arguments */
+				for (int i=0; i<3; i++) {
+					argstr = strsep(&optarg, ":");
+					/* Sanity check the given arguments */
+					if (argstr == NULL) {
+						/* Print the references and exit */
+						fprintf(stderr, "Invalid argument. Option -n requires REFERENCE:INDEX:VALUE (i.e. -n \"sensors:1:Sensor 1\")\n");
+						exit(EXIT_FAILURE);
+					}
+					if (i == 0) {
+						/* This is the reference */
+						ref = argstr;
+					} else if (i == 1) {
+						/* This is the index */
+						index = (int)strtol(argstr, (char **) NULL, 10);
+					} else {
+						/* This is the value to set it to */
+						new_val = argstr;
+					}	
+				}
+				/* We have everything we need, now commit the setting */
+				printf("Default for name reference '%s', index %d = '%s', changing to '%s'\n", ref, index, libaquaero5_get_default_name_by_ref(ref, index - 1), new_val);
+				if (libaquaero5_set_name_by_ref(device, ref, index - 1, new_val, &err_msg) < 0) {
+					fprintf(stderr, "failed to set name: %s (%s)\n", err_msg, strerror(errno));
+					exit(EXIT_FAILURE);
+				}
+				break;
 			case '?':
-				if (optopt == 'd'|| optopt == 'o')
+				if (optopt == 'n') {
+					/* Print the references and exit */
+					fprintf(stderr, "option -n requires REFERENCE:INDEX:VALUE (i.e. -n \"sensors:1:Sensor 1\")\n");
+					fprintf(stderr, "Defaults:\n");
+					for (int i=0; i<AQ5_NUM_NAME_TYPES; i++) {
+						fprintf(stderr, "Reference='%s'\n", libaquaero5_get_name_ref_by_type(i));
+						for (int j=0; j<name_positions[i].count; j++) {
+							printf("\tindex %d = '%s'\n", j+1, libaquaero5_get_default_name_by_type(i, j));
+						}
+					}
+				} else if (optopt == 'd'|| optopt == 'o') {
 					fprintf(stderr, "option -%c requires an argument\n",
 							optopt);
+				}
 				exit(EXIT_FAILURE);
 				break;
 			default:

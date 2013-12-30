@@ -74,6 +74,7 @@ unsigned char aq5_buf_data[AQ5_DATA_LEN];
 unsigned char aq5_buf_settings[AQ5_SETTINGS_LEN];
 unsigned char aq5_buf_soft_sensors[AQ5_SOFT_SENSORS_LEN];
 unsigned char aq5_buf_time[AQ5_TIME_LEN];
+unsigned char aq5_buf_name[AQ5_NAME_LEN + 3];
 char **aq5_buf_device_names;
 int aq5_fd = -1;
 
@@ -1214,16 +1215,16 @@ int libaquaero5_get_all_names(char *device, int max_attempts, char **err_msg)
 		}
 		if (aq5_check_and_strip_name_report_watermarks(name_buffer, clean_name_buffer) == 0) {
 			for (int j=0; j<181; j++) {
-				aq5_buf_device_names[j] = malloc(23 * sizeof(char));
+				aq5_buf_device_names[j] = malloc((AQ5_NAME_LEN - 1) * sizeof(char));
 				/* Copy the non 0 values to the array */
-				for (int a=0; a<23; a++) {
-					if (a == 22) {
+				for (int a=0; a<(AQ5_NAME_LEN - 1); a++) {
+					if (a == (AQ5_NAME_LEN - 2)) {
 						strncpy(aq5_buf_device_names[j] + a, "\0", sizeof(char));
 						break;
 					}
 					else {
-						if (clean_name_buffer[(j * 22) + a] != 0) {
-							strncpy(aq5_buf_device_names[j] + a, (const char *)clean_name_buffer + (j * 22) + a, sizeof(char));
+						if (clean_name_buffer[(j * (AQ5_NAME_LEN - 2)) + a] != 0) {
+							strncpy(aq5_buf_device_names[j] + a, (const char *)clean_name_buffer + (j * (AQ5_NAME_LEN - 2)) + a, sizeof(char));
 						} else {
 							strncpy(aq5_buf_device_names[j] + a, "\0", sizeof(char));
 							break;
@@ -1256,3 +1257,87 @@ char *libaquaero5_get_name(name_enum_t type, uint8_t index)
 		return "Unknown";
 	}
 }
+
+/* Return the human readable default name for the given type and index */
+char *libaquaero5_get_default_name_by_type(name_enum_t type, uint8_t index)
+{
+	if (index < name_positions[type].count) {
+#ifdef DEBUG
+		printf("Returning '%s'\n", default_name_strings[type].name_string[index]);
+#endif
+		return default_name_strings[type].name_string[index];
+	}
+
+	return "Unknown";
+}
+
+/* Return the human readable default name for the given reference and index */
+char *libaquaero5_get_default_name_by_ref(char *reference, uint8_t index)
+{
+	for (int n=0; n<AQ5_NUM_NAME_TYPES; n++) {
+		if (strcmp(reference, default_name_strings[n].ref) == 0) {
+			return libaquaero5_get_default_name_by_type(n, index);
+		}
+	}
+	return "Unknown";
+}
+
+/* Return the human readable reference for the given type */
+char *libaquaero5_get_name_ref_by_type(name_enum_t type)
+{
+	if (default_name_strings[type].ref != NULL) {
+		return default_name_strings[type].ref;
+	}
+	else {
+		return "Unknown";
+	}
+}
+
+/* Set the name for the given reference and index */
+int libaquaero5_set_name_by_ref(char *device, char *reference, uint8_t index, char *name, char **err_msg)
+{
+	for (int n=0; n<AQ5_NUM_NAME_TYPES; n++) {
+		if (strcmp(reference, default_name_strings[n].ref) == 0) {
+			if (index < name_positions[n].count) {
+#ifdef DEBUG
+				printf("Setting '%s' index %d to '%s'\n", reference, index, name);
+#endif
+				/* Initialize the buffer */
+				for (int i=0; i<(AQ5_NAME_LEN+3); i++) {
+					aq5_buf_name[i] = 0;
+				}
+				/* Set the address */
+				aq5_buf_name[1] = name_positions[n].address + index;
+
+				/* Fill aq5_buf_name with the integer values of the name string */
+				for (int a=0; a<strlen(name); a++) {
+					aq5_buf_name[a + 3] = (int)name[a];
+				}
+#ifdef DEBUG
+				printf("Sending name buffer: ");
+				for (int a=0; a<(AQ5_NAME_LEN+3); a++) {
+					printf("%02X ", aq5_buf_name[a]);
+				}
+				printf("\n");
+#endif
+				/* Allow the device to be disconnected and open only if the fd is undefined */
+				if (aq5_open(device, err_msg) != 0) {
+					return -1;
+				}
+
+				if (aq5_send_report(aq5_fd, 0xa, HID_REPORT_TYPE_OUTPUT, aq5_buf_name) != 0) {
+					*err_msg = "libaquaero5_set_name_by_ref() failed!";
+					return -1;
+				}
+				return 0;
+			}
+			else {
+				*err_msg = "invalid index for type!";
+				return -1;
+			}
+		}
+	}
+	*err_msg = "unable to find matching type!";
+	return -1; 
+}
+

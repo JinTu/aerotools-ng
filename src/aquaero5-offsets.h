@@ -178,6 +178,8 @@
 #define AQ5_SETTINGS_INFRARED_DIST				12
 #define AQ5_SETTINGS_AQUASTREAM_XT_DIST			3
 
+#define AQ5_NAME_LEN			24
+
 /* Definitions for name reports */
 typedef struct {
 	uint16_t offset;
