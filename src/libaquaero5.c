@@ -1215,16 +1215,16 @@ int libaquaero5_get_all_names(char *device, int max_attempts, char **err_msg)
 		}
 		if (aq5_check_and_strip_name_report_watermarks(name_buffer, clean_name_buffer) == 0) {
 			for (int j=0; j<181; j++) {
-				aq5_buf_device_names[j] = malloc(23 * sizeof(char));
+				aq5_buf_device_names[j] = malloc((AQ5_NAME_LEN - 1) * sizeof(char));
 				/* Copy the non 0 values to the array */
-				for (int a=0; a<23; a++) {
-					if (a == 22) {
+				for (int a=0; a<(AQ5_NAME_LEN - 1); a++) {
+					if (a == (AQ5_NAME_LEN - 2)) {
 						strncpy(aq5_buf_device_names[j] + a, "\0", sizeof(char));
 						break;
 					}
 					else {
-						if (clean_name_buffer[(j * 22) + a] != 0) {
-							strncpy(aq5_buf_device_names[j] + a, (const char *)clean_name_buffer + (j * 22) + a, sizeof(char));
+						if (clean_name_buffer[(j * (AQ5_NAME_LEN - 2)) + a] != 0) {
+							strncpy(aq5_buf_device_names[j] + a, (const char *)clean_name_buffer + (j * (AQ5_NAME_LEN - 2)) + a, sizeof(char));
 						} else {
 							strncpy(aq5_buf_device_names[j] + a, "\0", sizeof(char));
 							break;
@@ -1299,24 +1299,27 @@ int libaquaero5_set_name_by_ref(char *device, char *reference, uint8_t index, ch
 	for (int n=0; n<AQ5_NUM_NAME_TYPES; n++) {
 		if (strcmp(reference, default_name_strings[n].ref) == 0) {
 			if (index < name_positions[n].count) {
+#ifdef DEBUG
 				printf("Setting '%s' index %d to '%s'\n", reference, index, name);
+#endif
 				/* Initialize the buffer */
 				for (int i=0; i<(AQ5_NAME_LEN+3); i++) {
 					aq5_buf_name[i] = 0;
 				}
 				/* Set the address */
-					aq5_buf_name[1] = name_positions[n].address + index;
+				aq5_buf_name[1] = name_positions[n].address + index;
 
-				/* Fill aq5_buf_name with the values */
+				/* Fill aq5_buf_name with the integer values of the name string */
 				for (int a=0; a<strlen(name); a++) {
-					printf("Setting position %d to %02X\n", a + 3, (int)name[a]);
 					aq5_buf_name[a + 3] = (int)name[a];
 				}
-				printf("Full buffer: ");
+#ifdef DEBUG
+				printf("Sending name buffer: ");
 				for (int a=0; a<(AQ5_NAME_LEN+3); a++) {
 					printf("%02X ", aq5_buf_name[a]);
 				}
 				printf("\n");
+#endif
 				/* Allow the device to be disconnected and open only if the fd is undefined */
 				if (aq5_open(device, err_msg) != 0) {
 					return -1;
